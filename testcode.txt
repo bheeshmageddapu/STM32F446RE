@@ -1,0 +1,80 @@
+#include <DHT.h>
+#include <DHT_U.h>
+
+// Pin definitions
+#define GAS_SENSOR_PIN A0
+#define FIRE_SENSOR_PIN 2
+#define IR_SENSOR_PIN 3
+#define LDR_SENSOR_PIN A1
+#define DHT_PIN 4
+#define BUZZER_PIN 5
+#define LED_PIN 6
+
+// DHT sensor type
+#define DHTTYPE DHT22
+
+// Threshold values
+#define GAS_THRESHOLD 2
+#define FIRE_THRESHOLD LOW
+#define IR_THRESHOLD LOW
+#define LDR_THRESHOLD 3
+#define TEMP_THRESHOLD 40 // Example threshold in Celsius
+#define HUMIDITY_THRESHOLD 70 // Example threshold in percentage
+
+// Initialize DHT sensor
+DHT dht(DHT_PIN, DHTTYPE);
+
+void setup() {
+    // Initialize serial communication
+    Serial.begin(9600);
+
+    // Initialize pins
+    pinMode(FIRE_SENSOR_PIN, INPUT);
+    pinMode(IR_SENSOR_PIN, INPUT);
+    pinMode(BUZZER_PIN, OUTPUT);
+    pinMode(LED_PIN, OUTPUT);
+
+    // Initialize DHT sensor
+    dht.begin();
+}
+
+void loop() {
+    // Read sensor values
+    int gasValue = analogRead(GAS_SENSOR_PIN);
+    int ldrValue = analogRead(LDR_SENSOR_PIN);
+    int fireValue = digitalRead(FIRE_SENSOR_PIN);
+    int irValue = digitalRead(IR_SENSOR_PIN);
+    float humidity = dht.readHumidity();
+    float temperature = dht.readTemperature();
+
+    // Print sensor values for debugging
+    Serial.print("Gas: ");
+    Serial.print(gasValue);
+    Serial.print(" | LDR: ");
+    Serial.print(ldrValue);
+    Serial.print(" | Fire: ");
+    Serial.print(fireValue);
+    Serial.print(" | IR: ");
+    Serial.print(irValue);
+    Serial.print(" | Temp: ");
+    Serial.print(temperature);
+    Serial.print("C | Humidity: ");
+    Serial.print(humidity);
+    Serial.println("%");
+
+    // Check thresholds and activate buzzer/LED
+    if (gasValue > GAS_THRESHOLD || fireValue == FIRE_THRESHOLD || irValue == IR_THRESHOLD || temperature > TEMP_THRESHOLD || humidity > HUMIDITY_THRESHOLD) {
+        digitalWrite(BUZZER_PIN, HIGH);
+    } else {
+        digitalWrite(BUZZER_PIN, LOW);
+    }
+
+    if (ldrValue > LDR_THRESHOLD) {
+        digitalWrite(LED_PIN, HIGH);
+    } else {
+        digitalWrite(LED_PIN, LOW);
+    }
+
+    // Wait before next loop
+    delay(1000);
+}
